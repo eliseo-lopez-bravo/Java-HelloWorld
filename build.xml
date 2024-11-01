@@ -27,7 +27,7 @@
     </target>
 
     <target name="build" depends="init">
-        <javac destdir="${project.classes.dir}" includeantruntime="false" release="23">
+        <javac destdir="${project.classes.dir}" includeantruntime="false" release="21">
             <src path="src" />
             <classpath refid="classpath.lib" />
         </javac>
