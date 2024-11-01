@@ -13,7 +13,8 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-
+    environment: PROD
+    
     steps:
     - uses: actions/checkout@v4
     - name: Set up JDK 23
