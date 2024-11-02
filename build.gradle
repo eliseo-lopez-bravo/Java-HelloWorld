@@ -8,7 +8,7 @@ version = '1.0.0'
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(23) // Use Java version 21 as in Ant file
+        languageVersion = JavaLanguageVersion.of(21) // Use Java version 21 as in Ant file
     }
 }
 
