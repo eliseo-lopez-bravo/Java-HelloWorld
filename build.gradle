@@ -1,0 +1,98 @@
+plugins {
+    id 'java'
+    id 'war'
+}
+
+group = 'com.example'
+version = '1.0.0'
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(23) // Use Java version 21 as in Ant file
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Compile-time dependencies from the lib directory
+    implementation fileTree(dir: 'lib', include: '*.jar')
+}
+
+// Define the directories
+def classesDir = file("${buildDir}/classes/java/main")
+def webDir = file("./WebContent")
+
+
+// Clean task to delete classes directory and WAR file
+tasks.register('cleanBuild', Delete) {
+    delete classesDir
+    delete 'build/libs/root.war'
+}
+
+tasks.named('clean') {
+    dependsOn 'cleanBuild'
+}
+
+// Initialization task to prepare the classes directory and copy non-Java files
+tasks.register('init2') {
+    dependsOn 'clean'
+    doLast {
+        mkdir classesDir
+        copy {
+            from 'src'
+            include '**/*.*'
+            exclude '**/*.java'
+            into classesDir
+        }
+    }
+}
+
+// Compile Java files and output to classes directory
+tasks.named('compileJava') {
+    dependsOn 'init2'
+    destinationDirectory.set(classesDir)
+    options.compilerArgs << '--release' << '21' // Java release 21
+}
+
+// Package WAR file
+tasks.named('war') {
+    dependsOn 'compileJava' // Ensure classes are compiled before WAR packaging
+    archiveFileName = 'root.war'
+    
+    // Include compiled classes in WEB-INF/classes
+    from(classesDir) {
+        into 'WEB-INF/classes' // Place classes here
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE // Avoid duplicate class entries
+    }
+    
+    // Set the web content directory and handle duplicate entries
+    from(webDir) {
+        include '**/*'
+        //duplicatesStrategy = DuplicatesStrategy.EXCLUDE // Handle duplicates in web content
+    }
+}
+
+
+// Ensure that the classes are built before the WAR task runs
+tasks.named('war') {
+    dependsOn 'classes'
+}
+
+// Custom deploy task to copy the WAR file to the deploy directory
+/* Uncomment this if deployment is needed
+tasks.register('deploy') {
+    dependsOn 'war'
+    doLast {
+        copy {
+            from 'build/libs/root.war'
+            into deployDir
+        }
+    }
+}
+*/
+
+// Set default task to build the WAR
+defaultTasks 'war'
