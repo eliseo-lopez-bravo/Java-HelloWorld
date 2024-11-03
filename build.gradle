@@ -24,6 +24,7 @@ dependencies {
 // Define the directories
 def classesDir = file("${buildDir}/classes/java/main")
 def webDir = file("./WebContent")
+def warBuildDir = file("./build")
 
 
 // Clean task to delete classes directory and WAR file
@@ -60,6 +61,7 @@ tasks.named('compileJava') {
 // Package WAR file
 tasks.named('war') {
     dependsOn 'compileJava' // Ensure classes are compiled before WAR packaging
+    destinationDirectory.set(warBuildDir)
     archiveFileName = 'root.war'
     
     // Include compiled classes in WEB-INF/classes
