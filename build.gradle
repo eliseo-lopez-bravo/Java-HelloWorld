@@ -8,7 +8,7 @@ version = '1.0.0'
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(23) // Use Java version 21 as in Ant file
+        languageVersion = JavaLanguageVersion.of(23)
     }
 }
 
@@ -17,7 +17,6 @@ repositories {
 }
 
 dependencies {
-    // Compile-time dependencies from the lib directory
     implementation fileTree(dir: 'lib', include: '*.jar')
 }
 
@@ -26,11 +25,9 @@ def classesDir = file("${buildDir}/classes/java/main")
 def webDir = file("./WebContent")
 def warBuildDir = file("./build")
 
-
-// Clean task to delete classes directory and WAR file
 tasks.register('cleanBuild', Delete) {
     delete classesDir
-    delete 'build/libs/root.war'
+    delete 'build'
 }
 
 tasks.named('clean') {
@@ -38,7 +35,7 @@ tasks.named('clean') {
 }
 
 // Initialization task to prepare the classes directory and copy non-Java files
-tasks.register('init2') {
+tasks.register('initialize') {
     dependsOn 'clean'
     doLast {
         mkdir classesDir
@@ -53,48 +50,26 @@ tasks.register('init2') {
 
 // Compile Java files and output to classes directory
 tasks.named('compileJava') {
-    dependsOn 'init2'
+    dependsOn 'initialize'
     destinationDirectory.set(classesDir)
     options.compilerArgs << '--release' << '21' // Java release 21
 }
 
-// Package WAR file
 tasks.named('war') {
-    dependsOn 'compileJava' // Ensure classes are compiled before WAR packaging
+    dependsOn 'compileJava'
     destinationDirectory.set(warBuildDir)
     archiveFileName = 'root.war'
     
     // Include compiled classes in WEB-INF/classes
     from(classesDir) {
-        into 'WEB-INF/classes' // Place classes here
-        duplicatesStrategy = DuplicatesStrategy.EXCLUDE // Avoid duplicate class entries
+        into 'WEB-INF/classes'
+        duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     }
     
-    // Set the web content directory and handle duplicate entries
+    // Set the web content directory
     from(webDir) {
         include '**/*'
-        //duplicatesStrategy = DuplicatesStrategy.EXCLUDE // Handle duplicates in web content
     }
 }
 
-
-// Ensure that the classes are built before the WAR task runs
-tasks.named('war') {
-    dependsOn 'classes'
-}
-
-// Custom deploy task to copy the WAR file to the deploy directory
-/* Uncomment this if deployment is needed
-tasks.register('deploy') {
-    dependsOn 'war'
-    doLast {
-        copy {
-            from 'build/libs/root.war'
-            into deployDir
-        }
-    }
-}
-*/
-
-// Set default task to build the WAR
 defaultTasks 'war'
