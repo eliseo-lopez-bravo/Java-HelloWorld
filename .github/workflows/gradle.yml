@@ -17,6 +17,10 @@ on:
       platform:
         description: 'Docker platform (e.g., linux/amd64, linux/arm64)'
         default: 'linux/arm64'
+      tag:
+        description: 'Docker tag (e.g., v1, latest)'
+        default: 'latest'
+
 jobs:
   cleanup:
     runs-on: ubuntu-latest
@@ -71,9 +75,10 @@ jobs:
       run: |
         docker build \
           --platform ${{ github.event.inputs.platform || 'linux/arm64' }} \
-          -t jundog777/ci-cd:latest .
+          --tag jundog777/ci-cd:${{ github.event.inputs.tag || 'latest' }} .
+
     - name: Push Docker Image
-      run: docker push jundog777/ci-cd:latest
+      run: docker push jundog777/ci-cd:${{ github.event.inputs.tag || 'latest' }}
 
     # NOTE: The Gradle Wrapper is the default and recommended way to run Gradle (https://docs.gradle.org/current/userguide/gradle_wrapper.html).
     # If your project does not have the Gradle Wrapper configured, you can use the following configuration to run Gradle with a specified version.
